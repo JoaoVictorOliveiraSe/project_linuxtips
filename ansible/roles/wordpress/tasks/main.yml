@@ -1,0 +1,64 @@
+---
+- name: Adicionar repositório PPA do PHP
+  apt_repository:
+    repo: ppa:ondrej/php
+    state: present
+
+- name: Atualizar cache novamente
+  apt:
+    update_cache: yes
+
+- name: Instalação do Nginx e PHP
+  apt:
+    name:
+      - nginx
+      - unzip
+      - php8.0
+      - php8.0-imagick
+      - php8.0-curl
+      - php8.0-fpm
+      - php8.0-mbstring
+      - php8.0-cli
+      - php8.0-bcmath
+      - php8.0-xml
+      - php8.0-mysql
+      - php8.0-common
+      - php8.0-gd
+    state: present
+    update_cache: yes
+
+- name: Configuração do vhost nginx
+  template:
+    src: vhost.nginx.conf.j2
+    dest: /etc/nginx/sites-enabled/default
+
+- name: Baixando projeto WordPress e descompactando
+  ansible.builtin.unarchive:
+    src: https://wordpress.org/latest.zip
+    dest: /var/www/html
+    remote_src: yes
+
+- name: Criando diretório de uploads
+  ansible.builtin.file:
+    path: /var/www/html/wordpress/wp-content/uploads
+    state: directory
+    mode: '0775'
+    owner: www-data
+    group: www-data
+
+- name: Alterando arquivo wp-config
+  template:
+    src: wp-config.php.j2
+    dest: /var/www/html/wordpress/wp-config.php
+
+- name: Ajustando permissões do diretório de uploads
+  ansible.builtin.file:
+    path: /var/www/html/wordpress/wp-content/uploads
+    owner: www-data
+    group: www-data
+    mode: '0775'
+
+- name: Reiniciar nginx
+  service:
+    name: nginx
+    state: restarted

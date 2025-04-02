@@ -1,0 +1,32 @@
+---
+- name: Instalar MariaDB Server e Cliente
+  apt:
+    pkg:
+      - mariadb-server
+      - mariadb-client
+      - python3-mysqldb
+      - libmariadb-dev
+    update_cache: yes
+    state: present
+  vars:
+    wp_db_username: "wordpressuser"  # Substitua pelo nome de usuário desejado
+    wp_db_password: "password"      # Substitua pela senha desejada
+    wp_db_name: "wordpress"          # Substitua pelo nome do banco de dados desejado
+
+- name: Criar usuário MariaDB para WordPress
+  mysql_user:
+    name: "{{ wp_db_username }}"
+    password: "{{ wp_db_password }}"
+    priv: "{{ wp_db_name }}.*:ALL"
+    host: "%"
+    state: present
+
+- name: Criar banco de dados WordPress
+  mysql_db:
+    name: "{{ wp_db_name }}"
+    state: present
+
+- name: Reiniciar MariaDB para aplicar alterações
+  service:
+    name: mariadb
+    state: restarted

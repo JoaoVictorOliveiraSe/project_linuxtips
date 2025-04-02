@@ -1,0 +1,14 @@
+name: test_terraform
+run-name: 
+on:
+    push:
+jobs: 
+  tfsec:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixando o código
+        uses: actions/checkout@v2
+      - name: Instalando o tfsec
+        run: curl -s https://raw.githubusercontent.com/aquasecurity/tfsec/master/scripts/install_linux.sh | bash
+      - name: Executando tfsec
+        run: tfsec . 
